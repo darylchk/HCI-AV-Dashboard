@@ -2,7 +2,11 @@ import React from 'react';
 import { useExperiment } from '../experiment/ExperimentContext.jsx';
 
 export default function DrivingView() {
-  const { currentMessage, avPosition: scenarioAvPosition, showingCamera } = useExperiment();
+  const { currentMessage, avPosition: scenarioAvPosition, showingCamera, showCrossJunction, trafficLightMalfunction, waitingForMergeApproval } = useExperiment();
+
+  // Determine if vehicles should move
+  const userShouldMove = showCrossJunction && currentMessage === 'goahead' && waitingForMergeApproval;
+  const avShouldMove = showCrossJunction && currentMessage === 'avmovesfirst';
 
   // If showing camera view, display Jam.png
   if (showingCamera) {
@@ -20,6 +24,242 @@ export default function DrivingView() {
         <div className="absolute bottom-4 left-4 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
           KPE Tunnel - 1000m ahead
         </div>
+      </div>
+    );
+  }
+
+  // Scenario 5: Cross Junction View
+  if (showCrossJunction) {
+    return (
+      <div className="relative flex-1 bg-gradient-to-b from-sky-800 via-sky-600 to-gray-700 overflow-hidden">
+        {/* Cross Junction Road Surface - Animated container that moves down as user "drives up" */}
+        <div 
+          className="absolute inset-0 flex items-center justify-center transition-all duration-2000 ease-in-out"
+          style={{
+            transform: userShouldMove ? 'translateY(60%)' : 'translateY(0)',
+          }}
+        >
+          {/* Horizontal Road - Positioned higher to align with centered user car */}
+          <div 
+            className="absolute w-full h-[35%] bg-gray-700"
+            style={{ top: '15%' }} // Moved up from 32.5% to align with user car at center
+          >
+            {/* Horizontal road markings */}
+            <div className="w-full h-full relative">
+              {/* Top edge line */}
+              <div 
+                className="absolute top-0 left-0 right-0 h-1"
+                style={{
+                  background: 'repeating-linear-gradient(to right, #FCD34D 0px, #FCD34D 30px, transparent 30px, transparent 60px)',
+                  opacity: 0.7
+                }}
+              ></div>
+              {/* Center dashed line */}
+              <div 
+                className="absolute top-1/2 left-0 right-0 h-1 transform -translate-y-1/2"
+                style={{
+                  background: 'repeating-linear-gradient(to right, #FCD34D 0px, #FCD34D 30px, transparent 30px, transparent 60px)',
+                  opacity: 0.6
+                }}
+              ></div>
+              {/* Bottom edge line */}
+              <div 
+                className="absolute bottom-0 left-0 right-0 h-1"
+                style={{
+                  background: 'repeating-linear-gradient(to right, #FCD34D 0px, #FCD34D 30px, transparent 30px, transparent 60px)',
+                  opacity: 0.7
+                }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Vertical Road - Extended to continue beyond screen */}
+          <div 
+            className="absolute bg-gray-700"
+            style={{ 
+              left: '32.5%',
+              width: '35%',
+              top: '-100%', // Start above screen
+              height: '300%', // Extended height to continue as screen shifts
+            }}
+          >
+            {/* Vertical road markings */}
+            <div className="w-full h-full relative">
+              {/* Left edge line */}
+              <div 
+                className="absolute left-0 top-0 bottom-0 w-1"
+                style={{
+                  background: 'repeating-linear-gradient(to bottom, #FCD34D 0px, #FCD34D 30px, transparent 30px, transparent 60px)',
+                  opacity: 0.7
+                }}
+              ></div>
+              {/* Center dashed line */}
+              <div 
+                className="absolute left-1/2 top-0 bottom-0 w-1 transform -translate-x-1/2"
+                style={{
+                  background: 'repeating-linear-gradient(to bottom, #FCD34D 0px, #FCD34D 30px, transparent 30px, transparent 60px)',
+                  opacity: 0.6
+                }}
+              ></div>
+              {/* Right edge line */}
+              <div 
+                className="absolute right-0 top-0 bottom-0 w-1"
+                style={{
+                  background: 'repeating-linear-gradient(to bottom, #FCD34D 0px, #FCD34D 30px, transparent 30px, transparent 60px)',
+                  opacity: 0.7
+                }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Traffic Light - Positioned relative to horizontal road */}
+          <div 
+            className="absolute z-20"
+            style={{ top: '10.5%', left: '50%', transform: 'translateX(-50%)' }} // Adjusted to be above the raised horizontal road
+          >
+            <div className="bg-gray-900 rounded-lg p-2 border-2 border-gray-600 shadow-2xl">
+              <div className="flex flex-col gap-2">
+                {/* Red Light */}
+                <div 
+                  className={`w-8 h-8 rounded-full transition-all duration-300 ${
+                    trafficLightMalfunction ? 'bg-red-600 shadow-lg shadow-red-500/50' : 'bg-red-900/30'
+                  }`}
+                  style={{
+                    animation: trafficLightMalfunction ? 'lightFlicker 1.5s ease-in-out infinite' : 'none'
+                  }}
+                ></div>
+                {/* Orange Light */}
+                <div 
+                  className={`w-8 h-8 rounded-full transition-all duration-300 ${
+                    trafficLightMalfunction ? 'bg-[#F8A406] shadow-lg shadow-orange-500/50' : 'bg-orange-900/30'
+                  }`}
+                  style={{
+                    animation: trafficLightMalfunction ? 'lightFlicker 1.5s ease-in-out infinite 0.5s' : 'none'
+                  }}
+                ></div>
+                {/* Green Light */}
+                <div 
+                  className={`w-8 h-8 rounded-full transition-all duration-300 ${
+                    trafficLightMalfunction ? 'bg-green-500 shadow-lg shadow-green-500/50' : 'bg-green-900/30'
+                  }`}
+                  style={{
+                    animation: trafficLightMalfunction ? 'lightFlicker 1.5s ease-in-out infinite 1s' : 'none'
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* AV Car - In upper lane of horizontal road, between top and middle line */}
+          <div 
+            className="absolute z-10 transition-all duration-2000 ease-in-out"
+            style={{
+              left: avShouldMove ? '120%' : '8%',
+              top: '23.75%', // Adjusted for raised horizontal road: 15% + (35% / 4) ≈ 23.75%
+              width: '12vw',
+              minWidth: '120px',
+              transform: 'translateY(-50%)',
+              filter: 'drop-shadow(0 0 10px rgba(248, 164, 6, 0.5))',
+              animation: avShouldMove ? 'avMoveAcross 2s ease-in-out forwards' : 'none'
+            }}
+          >
+            <div 
+              className="absolute -inset-1 border-2 border-[#F8A406] rounded-lg"
+              style={{
+                animation: 'avBoxFlash 2s ease-in-out infinite'
+              }}
+            ></div>
+            <img 
+              src="/src/Components/images/AV-Car-Model.png" 
+              alt="AV Car"
+              className="w-full h-auto object-contain drop-shadow-2xl relative z-10"
+            />
+            {currentMessage === 'seesyou' && (
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                <span className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                  Sees you
+                </span>
+              </div>
+            )}
+            <div className="text-center mt-2">
+              <span className="bg-[#F8A406] text-[#2F2E2E] px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                AV - MYC 4224Y
+              </span>
+            </div>
+          </div>
+
+          {/* AR Grid Overlay */}
+          <div className="absolute inset-0 pointer-events-none opacity-10">
+            <svg className="w-full h-full">
+              <defs>
+                <pattern id="crossgrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="cyan" strokeWidth="0.5"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#crossgrid)" />
+            </svg>
+          </div>
+        </div>
+
+        {/* User Car - ALWAYS centered on screen, NEVER moves */}
+        <div 
+          className="absolute z-10"
+          style={{
+            left: '42.5%', // Adjusted to be more centered in vertical road (between 32.5% left edge and 50% center)
+            top: '50%', // CENTERED vertically - never moves
+            width: '16vw',
+            minWidth: '160px',
+            transform: 'translateX(-50%) translateY(-50%)',
+          }}
+        >
+          <img 
+            src="/src/Components/images/User-Car-Model.png" 
+            alt="My Car"
+            className="w-full h-auto object-contain drop-shadow-2xl relative z-10"
+          />
+          <div className="text-center mt-2">
+            <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+              You
+            </span>
+          </div>
+        </div>
+
+        {/* V2V Status - AR Style */}
+        <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-[#F3F7FF] text-sm flex items-center gap-2 z-30">
+          <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full border border-purple-400/50 flex items-center gap-2">
+            <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>
+            Cross Junction - Right of Way Negotiation
+          </div>
+        </div>
+
+        {/* Traffic Light Status */}
+        <div className="absolute bottom-8 right-8 text-[#F3F7FF] text-sm z-30">
+          <div className="bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg border border-red-400/50 flex items-center gap-2">
+            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            <span className="text-red-400 font-bold">Traffic Light Malfunction</span>
+          </div>
+        </div>
+
+        <style jsx>{`
+          @keyframes avBoxFlash {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+          }
+          @keyframes lightFlicker {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+          }
+          @keyframes avMoveAcross {
+            0% {
+              left: 8%;
+              opacity: 1;
+            }
+            100% {
+              left: 120%;
+              opacity: 0;
+            }
+          }
+        `}</style>
       </div>
     );
   }

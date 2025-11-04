@@ -1,6 +1,6 @@
 import React from 'react';
 import { useExperiment } from '../experiment/ExperimentContext.jsx';
-import { Car, AlertTriangle, CheckCircle, ArrowRight, Heart, Eye, ThumbsUp, AlertOctagon, Camera } from 'lucide-react';
+import { Car, AlertTriangle, CheckCircle, ArrowRight, Heart, Eye, ThumbsUp, AlertOctagon, Camera, Navigation } from 'lucide-react';
 
 export default function DashboardMessages() {
   const { hazardActive, messageHistory, currentMessage } = useExperiment();
@@ -94,6 +94,20 @@ export default function DashboardMessages() {
                         <span className="font-bold">View Camera Footage?</span>
                       </div>
                     </div>
+                  ) : msg.type === 'rightofway' ? (
+                    <div className="flex justify-center w-full">
+                      <div className="bg-purple-600 border-2 border-purple-600 text-white px-3 py-1.5 rounded-lg shadow-lg inline-flex items-center gap-2 text-xs">
+                        <Navigation className="w-4 h-4" strokeWidth={3} />
+                        <span className="font-bold">Right of Way</span>
+                      </div>
+                    </div>
+                  ) : msg.type === 'avmovesfirst' ? (
+                    <div className="flex justify-center w-full">
+                      <div className="bg-[#F8A406] border-2 border-[#F8A406] text-[#2F2E2E] px-3 py-1.5 rounded-lg shadow-lg inline-flex items-center gap-2 text-xs">
+                        <Heart className="w-4 h-4 fill-[#2F2E2E]" strokeWidth={3} />
+                        <span className="font-bold">AV Will Move First</span>
+                      </div>
+                    </div>
                   ) : (
                     <div className="flex justify-center w-full">
                       <div className="bg-[#F8A406] border-2 border-[#F8A406] text-[#2F2E2E] px-3 py-1.5 rounded-lg shadow-lg inline-flex items-center gap-2 text-xs">
@@ -117,6 +131,8 @@ export default function DashboardMessages() {
                          msg.type === 'goahead' ? 'Safe to Proceed' :
                          msg.type === 'trafficjam' ? 'Traffic Jam - KPE Tunnel' :
                          msg.type === 'cameraquestion' ? 'View Live Camera Feed?' :
+                         msg.type === 'rightofway' ? 'Would You Like to Go First?' :
+                         msg.type === 'avmovesfirst' ? 'Thank You - AV Will Go First' :
                          'Wants to Overtake'}
                       </div>
                       <div className="text-[#F3F7FF]/50 text-xs">

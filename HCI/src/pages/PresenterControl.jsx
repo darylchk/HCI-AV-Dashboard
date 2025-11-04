@@ -23,7 +23,7 @@ import {
 } from '../components/ui/select.jsx';
 
 function PresenterControlContent() {
-  const { triggerHazard, resetExperiment, hazardActive, startAVOvertakeScenario, currentMessage, messageHistory, startUserLaneChangeScenario, userLaneChangeRequested, avPosition, startTrafficJamScenario, waitingForCameraApproval } = useExperiment();
+  const { triggerHazard, resetExperiment, hazardActive, startAVOvertakeScenario, currentMessage, messageHistory, startUserLaneChangeScenario, userLaneChangeRequested, avPosition, startTrafficJamScenario, waitingForCameraApproval, startMalfunctioningTrafficLightScenario, waitingForRightOfWay } = useExperiment();
   const [selectedLocation, setSelectedLocation] = useState('left');
   const [participantId, setParticipantId] = useState('');
 
@@ -243,57 +243,49 @@ function PresenterControlContent() {
               )}
             </CardContent>
           </Card>
-        </div>
 
-        {/* Control Section */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Version A - Spatial AR */}
-          <Card className="bg-gradient-to-br from-blue-900/50 to-blue-800/30 border-blue-500/50">
+          {/* Scenario 5: Malfunctioning Traffic Light */}
+          <Card className="bg-gradient-to-br from-indigo-900/50 to-purple-800/30 border-purple-500/50">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                Version A: Spatial AR
+              <CardTitle className="text-white flex items-center gap-2 text-xl">
+                <AlertTriangle className="w-6 h-6" />
+                Scenario 5: Malfunctioning Traffic Light
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-blue-950/50 rounded-lg p-4">
-                <p className="text-blue-200 text-sm">
-                  Flashing RED graphic with arrow and outline anchored to hazard location on the road.
+              <div className="bg-purple-950/50 rounded-lg p-4">
+                <p className="text-purple-200 font-semibold mb-2 text-sm">
+                  Cross junction with malfunctioning traffic light:
                 </p>
+                <ol className="text-purple-200 text-xs space-y-1 list-decimal list-inside">
+                  <li><strong>PRESENTER:</strong> Click "Start Scenario 5"</li>
+                  <li>Cross junction view appears with flickering traffic light</li>
+                  <li>AV on horizontal lane (left), User on vertical lane (bottom)</li>
+                  <li>AV sends "Sees You" message first</li>
+                  <li>AV asks: "Would you like to go first?" (Right of Way)</li>
+                  <li><strong>USER:</strong> Clicks "I'll Go First" or "You Go First"</li>
+                  <li><strong>If Yes:</strong> AV sends "Go Ahead" → User proceeds</li>
+                  <li><strong>If No:</strong> AV says "Thank you" → AV proceeds first</li>
+                </ol>
               </div>
               <Button
-                onClick={handleTriggerSpatialAR}
-                disabled={hazardActive}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-6 text-lg"
+                onClick={() => {
+                  console.log('Malfunctioning Traffic Light Scenario button clicked!');
+                  startMalfunctioningTrafficLightScenario();
+                }}
+                disabled={hazardActive || currentMessage}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-6 text-lg"
               >
                 <Play className="w-5 h-5 mr-2" />
-                Trigger Spatial AR Alert
+                Start Scenario 5
               </Button>
-            </CardContent>
-          </Card>
-
-          {/* Version B - Standard Text */}
-          <Card className="bg-gradient-to-br from-orange-900/50 to-orange-800/30 border-orange-500/50">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5" />
-                Version B: Standard Text
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-orange-950/50 rounded-lg p-4">
-                <p className="text-orange-200 text-sm">
-                  Fixed RED box at top-center with generic text "HAZARD AHEAD 150m".
-                </p>
-              </div>
-              <Button
-                onClick={handleTriggerStandardText}
-                disabled={hazardActive}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-6 text-lg"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Trigger Standard Text Alert
-              </Button>
+              {waitingForRightOfWay && (
+                <div className="bg-purple-900/50 rounded-lg p-3 text-center">
+                  <p className="text-purple-300 text-xs animate-pulse">
+                    ⚠ Waiting for user to decide on right of way
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

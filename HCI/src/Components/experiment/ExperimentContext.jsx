@@ -30,6 +30,10 @@ const getSpeechText = (messageType) => {
       return 'Go ahead. Safe to proceed with lane change.';
     case 'trafficjam':
       return 'Warning. Major Traffic Jam detected. 1000 meters ahead in KPE Tunnel. Would you like to view the live footage of the Jam?';
+    case 'rightofway':
+      return 'Right of way. Vehicle ABC-1234 is requesting your opinion. Would you like to go first?';
+    case 'avmovesfirst':
+      return 'A V will move first. Thank you for letting me go first.';
     default:
       return '';
   }
@@ -43,13 +47,16 @@ export function ExperimentProvider({ children }) {
     trialStartTime: null,
     showLocationModal: false,
     currentTrialId: null,
-    currentMessage: null, // 'acknowledged' | 'overtaking' | 'thankyou' | 'intention' | 'goahead' | 'trafficjam' | null
+    currentMessage: null, // 'acknowledged' | 'overtaking' | 'thankyou' | 'intention' | 'goahead' | 'trafficjam' | 'rightofway' | 'avmovesfirst' | null
     messageHistory: [], // Array of message objects with timestamp
     waitingForMergeApproval: false,
     userLaneChangeRequested: false, // For Scenario 2
     avPosition: null, // 'beside-left' | 'behind' | null - for Scenario 2
     waitingForCameraApproval: false, // For Scenario 4
     showingCamera: false, // For Scenario 4 - when camera view is active
+    waitingForRightOfWay: false, // For Scenario 5
+    showCrossJunction: false, // For Scenario 5 - show cross junction view
+    trafficLightMalfunction: false, // For Scenario 5 - flickering traffic light
   });
 
   // Sync state across tabs using localStorage
@@ -116,6 +123,9 @@ export function ExperimentProvider({ children }) {
       avPosition: null,
       waitingForCameraApproval: false,
       showingCamera: false,
+      waitingForRightOfWay: false,
+      showCrossJunction: false,
+      trafficLightMalfunction: false,
     });
   }, []);
 
@@ -359,6 +369,136 @@ export function ExperimentProvider({ children }) {
     }));
   }, []);
 
+  // Scenario 5: Malfunctioning Traffic Light at Cross Junction
+  const startMalfunctioningTrafficLightScenario = useCallback(() => {
+    const trialId = `trial_${Date.now()}`;
+    
+    // Reset and start fresh with cross junction view
+    setExperimentState({
+      activeVersion: 'spatial-ar',
+      hazardActive: false,
+      hazardLocation: 'left',
+      trialStartTime: Date.now(),
+      showLocationModal: false,
+      currentTrialId: trialId,
+      currentMessage: null,
+      messageHistory: [],
+      waitingForMergeApproval: false,
+      userLaneChangeRequested: false,
+      avPosition: null,
+      waitingForCameraApproval: false,
+      showingCamera: false,
+      waitingForRightOfWay: false,
+      showCrossJunction: true,
+      trafficLightMalfunction: true,
+    });
+
+    // Step 1: After 1 second, AV sends "Sees You" message
+    setTimeout(() => {
+      const seesYouMsg = {
+        type: 'seesyou',
+        timestamp: Date.now(),
+        vehicleId: 'MYC 4224Y'
+      };
+      setExperimentState(prev => ({
+        ...prev,
+        currentMessage: 'seesyou',
+        messageHistory: [seesYouMsg]
+      }));
+    }, 1000);
+
+    // Step 2: After "Sees You" speech completes, send "Right of Way" request
+    const seesYouDelay = getSpeechDuration(getSpeechText('seesyou'));
+    setTimeout(() => {
+      const rightOfWayMsg = {
+        type: 'rightofway',
+        timestamp: Date.now(),
+        vehicleId: 'MYC 4224Y'
+      };
+      setExperimentState(prev => ({
+        ...prev,
+        currentMessage: 'rightofway',
+        messageHistory: [...prev.messageHistory, rightOfWayMsg]
+      }));
+    }, 1000 + seesYouDelay);
+
+    // Step 3: After "Right of Way" speech completes, wait for user decision
+    const rightOfWayDelay = getSpeechDuration(getSpeechText('rightofway'));
+    setTimeout(() => {
+      setExperimentState(prev => ({
+        ...prev,
+        waitingForRightOfWay: true
+      }));
+    }, 1000 + seesYouDelay + rightOfWayDelay);
+  }, []);
+
+  const userGoesFirst = useCallback(() => {
+    // User clicked "Yes" - they want to go first
+    // AV sends "Acknowledged Intention" message
+    const intentionMsg = {
+      type: 'intention',
+      timestamp: Date.now(),
+      vehicleId: 'MYC 4224Y'
+    };
+    
+    setExperimentState(prev => ({
+      ...prev,
+      currentMessage: 'intention',
+      messageHistory: [...prev.messageHistory, intentionMsg],
+      waitingForRightOfWay: false,
+    }));
+
+    // After speech completes, send "Go Ahead" message
+    const intentionDelay = getSpeechDuration(getSpeechText('intention'));
+    setTimeout(() => {
+      const goAheadMsg = {
+        type: 'goahead',
+        timestamp: Date.now(),
+        vehicleId: 'MYC 4224Y'
+      };
+      
+      setExperimentState(prev => ({
+        ...prev,
+        currentMessage: 'goahead',
+        messageHistory: [...prev.messageHistory, goAheadMsg],
+        waitingForMergeApproval: true, // User can now proceed
+      }));
+    }, intentionDelay);
+  }, []);
+
+  const avGoesFirst = useCallback(() => {
+    // User clicked "No" - AV will go first
+    // AV sends "Acknowledged Intention" message
+    const intentionMsg = {
+      type: 'intention',
+      timestamp: Date.now(),
+      vehicleId: 'MYC 4224Y'
+    };
+    
+    setExperimentState(prev => ({
+      ...prev,
+      currentMessage: 'intention',
+      messageHistory: [...prev.messageHistory, intentionMsg],
+      waitingForRightOfWay: false,
+    }));
+
+    // After speech completes, send "AV Moves First" message
+    const intentionDelay = getSpeechDuration(getSpeechText('intention'));
+    setTimeout(() => {
+      const avMovesFirstMsg = {
+        type: 'avmovesfirst',
+        timestamp: Date.now(),
+        vehicleId: 'MYC 4224Y'
+      };
+      
+      setExperimentState(prev => ({
+        ...prev,
+        currentMessage: 'avmovesfirst',
+        messageHistory: [...prev.messageHistory, avMovesFirstMsg],
+      }));
+    }, intentionDelay);
+  }, []);
+
   const value = {
     ...experimentState,
     triggerHazard,
@@ -373,6 +513,9 @@ export function ExperimentProvider({ children }) {
     startTrafficJamScenario,
     viewCameraFeed,
     declineCameraFeed,
+    startMalfunctioningTrafficLightScenario,
+    userGoesFirst,
+    avGoesFirst,
   };
 
   return (

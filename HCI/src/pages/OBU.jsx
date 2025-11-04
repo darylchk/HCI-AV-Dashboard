@@ -59,6 +59,12 @@ function OBUContent() {
         case 'trafficjam':
           speechText = 'Warning. Major Traffic Jam detected. 1000 meters ahead in KPE Tunnel. Would you like to view the live footage of the Jam?';
           break;
+        case 'rightofway':
+          speechText = 'Right of way. Vehicle ABC-1234 is requesting your opinion. Would you like to go first?';
+          break;
+        case 'avmovesfirst':
+          speechText = 'A V will move first. Thank you for letting me go first.';
+          break;
       }
       
       if (speechText) {
@@ -290,6 +296,56 @@ function OBUContent() {
                 </div>
                 <div className="text-[#F3F7FF]/70 text-base">
                   1000m ahead in KPE Tunnel
+                </div>
+              </div>
+            </div>
+          </>
+        ) : messageType === 'rightofway' ? (
+          <>
+            {/* Right of Way Request Message */}
+            <div className="flex justify-center">
+              <div className="bg-purple-600 border-2 border-purple-600 text-white px-8 py-3 rounded-lg shadow-lg inline-flex items-center gap-3">
+                <ArrowRight className="w-6 h-6" strokeWidth={3} />
+                <span className="font-bold text-xl animate-blink">Right of Way</span>
+              </div>
+            </div>
+
+            {/* Vehicle Info Card */}
+            <div className="bg-[#1a1919] rounded-2xl p-6 shadow-2xl border border-gray-700">
+              <div className="text-center space-y-3">
+                <div className="text-purple-500 font-black text-2xl tracking-wide animate-blink">
+                  VEHICLE ABC-1234
+                </div>
+                <div className="text-[#F3F7FF] text-xl font-semibold">
+                  Would you like to go first?
+                </div>
+                <div className="text-[#F3F7FF]/70 text-base">
+                  Vehicle is requesting your opinion
+                </div>
+              </div>
+            </div>
+          </>
+        ) : messageType === 'avmovesfirst' ? (
+          <>
+            {/* AV Moves First Message */}
+            <div className="flex justify-center">
+              <div className="bg-[#F8A406] border-2 border-[#F8A406] text-[#2F2E2E] px-8 py-3 rounded-lg shadow-lg inline-flex items-center gap-3">
+                <Heart className="w-6 h-6 fill-[#2F2E2E]" strokeWidth={3} />
+                <span className="font-bold text-xl animate-blink">AV Will Move First</span>
+              </div>
+            </div>
+
+            {/* Vehicle Info Card */}
+            <div className="bg-[#1a1919] rounded-2xl p-6 shadow-2xl border border-gray-700">
+              <div className="text-center space-y-3">
+                <div className="text-[#F8A406] font-black text-2xl tracking-wide animate-blink">
+                  VEHICLE ABC-1234
+                </div>
+                <div className="text-[#F3F7FF] text-xl font-semibold">
+                  Thank You
+                </div>
+                <div className="text-[#F3F7FF]/70 text-base">
+                  Vehicle thanks you for letting them go first
                 </div>
               </div>
             </div>

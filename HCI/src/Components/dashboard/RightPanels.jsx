@@ -1,74 +1,55 @@
 import React from 'react';
-import { MapPin, Radio, Zap, Car, AlertCircle, CheckCircle, Heart, ArrowRight, Eye, ThumbsUp, ArrowLeft, AlertOctagon, Camera } from 'lucide-react';
+import { MapPin, Radio, Zap, Car, AlertCircle, CheckCircle, Heart, ArrowRight, Eye, ThumbsUp, ArrowLeft, AlertOctagon, Camera, UserCheck, Navigation } from 'lucide-react';
 import { useExperiment } from '../experiment/ExperimentContext.jsx';
 
 export default function RightPanels() {
-  const { waitingForMergeApproval, allowMerge, messageHistory, currentMessage, avPosition, simulateLaneChangeLeft, userLaneChangeRequested, completeUserLaneChange, waitingForCameraApproval, viewCameraFeed, declineCameraFeed } = useExperiment();
+  const { waitingForMergeApproval, allowMerge, messageHistory, currentMessage, avPosition, simulateLaneChangeLeft, userLaneChangeRequested, completeUserLaneChange, waitingForCameraApproval, viewCameraFeed, declineCameraFeed, userGoesFirst, avGoesFirst, waitingForRightOfWay } = useExperiment();
   
   return (
     <div className="w-80 bg-[#1a1919] border-l border-gray-700 flex flex-col gap-4 p-4 overflow-y-auto">
       
-      {/* Road Hazards & Traffic Panel */}
+      {/* Road Hazards & Traffic Panel - Smaller */}
       <div className="bg-[#2F2E2E] rounded-2xl overflow-hidden">
-        <div className="p-4 border-b border-gray-700">
-          <h3 className="text-[#F3F7FF] font-semibold flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-[#F8A406]" />
+        <div className="p-3 border-b border-gray-700">
+          <h3 className="text-[#F3F7FF] font-semibold flex items-center gap-2 text-sm">
+            <MapPin className="w-4 h-4 text-[#F8A406]" />
             Road Hazards & Traffic
           </h3>
         </div>
-        <div className="p-4">
-          {/* Mini map visualization */}
-          <div className="relative h-24 bg-gray-800 rounded-lg mb-4 overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-full h-1 bg-[#F8A406]"></div>
-              <div className="absolute w-3 h-3 bg-blue-500 rounded-full"></div>
-            </div>
-          </div>
-
-          {/* Nearby Hazards */}
+        <div className="p-3">
+          {/* Scenario-specific hazards only */}
           <div className="space-y-2 text-sm">
-            <div className="text-[#F3F7FF]/70 font-medium mb-2">Nearby Hazards</div>
-            {currentMessage === 'trafficjam' ? (
-              // Scenario 4: Only show traffic congestion
+            {currentMessage === 'trafficjam' && (
+              // Scenario 4: Show traffic congestion
               <div className="flex items-center justify-between bg-red-500/10 border border-red-500/30 rounded-lg p-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                   <span className="text-[#F3F7FF] text-xs">Heavy traffic congestion</span>
                 </div>
-                <span className="text-red-500 text-xs font-bold">high</span>
+                <span className="text-red-500 text-xs font-bold">HIGH</span>
               </div>
-            ) : (
-              // Default: Show all hazards
-              <>
-                <div className="flex items-center justify-between bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-[#F8A406] rounded-full"></div>
-                    <span className="text-[#F3F7FF] text-xs">Large pothole in right lane</span>
-                  </div>
-                  <span className="text-[#F8A406] text-xs font-bold">warning</span>
+            )}
+            {currentMessage === 'rightofway' && (
+              // Scenario 5: Show faulty traffic light
+              <div className="flex items-center justify-between bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                  <span className="text-[#F3F7FF] text-xs">Faulty Traffic Light</span>
                 </div>
-                <div className="flex items-center justify-between bg-red-500/10 border border-red-500/30 rounded-lg p-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span className="text-[#F3F7FF] text-xs">Heavy traffic congestion</span>
-                  </div>
-                  <span className="text-red-500 text-xs font-bold">high</span>
-                </div>
-                <div className="flex items-center justify-between bg-blue-500/10 border border-blue-500/30 rounded-lg p-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-[#F3F7FF] text-xs">Lane closure - construction zone</span>
-                  </div>
-                  <span className="text-blue-500 text-xs font-bold">low</span>
-                </div>
-              </>
+                <span className="text-red-500 text-xs font-bold">HIGH</span>
+              </div>
+            )}
+            {!currentMessage && (
+              <div className="text-[#F3F7FF]/50 text-xs text-center py-2">
+                No hazards detected
+              </div>
             )}
           </div>
         </div>
       </div>
       
-      {/* Communications Panel */}
-      <div className="bg-[#2F2E2E] rounded-2xl overflow-hidden">
+      {/* Communications Panel - Bigger */}
+      <div className="bg-[#2F2E2E] rounded-2xl overflow-hidden flex-1">
         <div className="p-4 border-b border-gray-700">
           <h3 className="text-[#F3F7FF] font-semibold flex items-center gap-2">
             <Radio className="w-5 h-5 text-[#F8A406]" />
@@ -77,8 +58,8 @@ export default function RightPanels() {
         </div>
         <div className="p-4 space-y-3">
           {messageHistory.length > 0 ? (
-            // Show messages in reverse order (most recent first)
-            [...messageHistory].reverse().map((msg, index) => (
+            // Show only last 2 messages in reverse order (most recent first)
+            [...messageHistory].reverse().slice(0, 2).map((msg, index) => (
               <div 
                 key={index}
                 className={`rounded-xl p-3 transition-all ${
@@ -150,6 +131,18 @@ export default function RightPanels() {
                       <span>View Live Camera Footage?</span>
                     </>
                   )}
+                  {msg.type === 'rightofway' && (
+                    <>
+                      <Navigation className="w-4 h-4" />
+                      <span>Right of Way - Would You Go First?</span>
+                    </>
+                  )}
+                  {msg.type === 'avmovesfirst' && (
+                    <>
+                      <Heart className="w-4 h-4 fill-current" />
+                      <span>AV Will Move First - Thank You</span>
+                    </>
+                  )}
                 </div>
                 <div className={`text-xs mt-1 ${
                   msg.type === currentMessage ? 'text-[#F3F7FF]/50' : 'text-[#F3F7FF]/30'
@@ -180,36 +173,15 @@ export default function RightPanels() {
               Acknowledge
             </button>
             <button 
-              onClick={() => {
-                // Scenario 1: Allow AV to merge
-                if (currentMessage === 'overtaking' && waitingForMergeApproval) {
-                  allowMerge();
-                }
-                // Scenario 2: Acknowledge "Go Ahead" and complete lane change
-                else if (currentMessage === 'goahead' && waitingForMergeApproval && userLaneChangeRequested) {
-                  completeUserLaneChange();
-                }
-              }}
-              disabled={!waitingForMergeApproval}
-              className={`rounded-lg p-3 text-xs font-medium transition-all flex items-center justify-center gap-2 ${
-                waitingForMergeApproval 
-                  ? 'bg-green-600 hover:bg-green-700 text-white animate-pulse font-bold shadow-lg shadow-green-600/50' 
-                  : 'bg-gray-700 text-[#F3F7FF] cursor-not-allowed'
-              }`}
+              disabled
+              className="bg-gray-700 text-[#F3F7FF] rounded-lg p-3 text-xs font-medium cursor-not-allowed"
             >
-              {waitingForMergeApproval && <CheckCircle className="w-4 h-4" />}
-              {currentMessage === 'goahead' && userLaneChangeRequested ? 'Acknowledge' : 'Allow Merge'}
+              Allow Merge
             </button>
             <button 
-              onClick={simulateLaneChangeLeft}
-              disabled={currentMessage !== 'seesyou' || userLaneChangeRequested}
-              className={`rounded-lg p-3 text-xs font-medium transition-all flex items-center justify-center gap-2 col-span-2 ${
-                currentMessage === 'seesyou' && !userLaneChangeRequested
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white animate-pulse font-bold shadow-lg shadow-blue-600/50' 
-                  : 'bg-gray-700 text-[#F3F7FF] cursor-not-allowed'
-              }`}
+              disabled
+              className="bg-gray-700 text-[#F3F7FF] rounded-lg p-3 text-xs font-medium cursor-not-allowed col-span-2"
             >
-              {currentMessage === 'seesyou' && !userLaneChangeRequested && <ArrowLeft className="w-4 h-4" />}
               Initiate Lane Change
             </button>
             <button 
@@ -236,29 +208,39 @@ export default function RightPanels() {
               {waitingForCameraApproval && <AlertCircle className="w-4 h-4" />}
               No
             </button>
-            <button disabled className="bg-gray-700 text-[#F3F7FF] rounded-lg p-3 text-xs font-medium cursor-not-allowed flex items-center justify-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              Right Of Way
+            <button 
+              onClick={userGoesFirst}
+              disabled={!waitingForRightOfWay}
+              className={`rounded-lg p-3 text-xs font-medium transition-all flex items-center justify-center gap-2 ${
+                waitingForRightOfWay
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white animate-pulse font-bold shadow-lg shadow-purple-600/50' 
+                  : 'bg-gray-700 text-[#F3F7FF] cursor-not-allowed'
+              }`}
+            >
+              {waitingForRightOfWay && <UserCheck className="w-4 h-4" />}
+              I'll Go First
+            </button>
+            <button 
+              onClick={avGoesFirst}
+              disabled={!waitingForRightOfWay}
+              className={`rounded-lg p-3 text-xs font-medium transition-all flex items-center justify-center gap-2 ${
+                waitingForRightOfWay
+                  ? 'bg-orange-600 hover:bg-orange-700 text-white font-bold' 
+                  : 'bg-gray-700 text-[#F3F7FF] cursor-not-allowed'
+              }`}
+            >
+              {waitingForRightOfWay && <Car className="w-4 h-4" />}
+              You Go First
             </button>
           </div>
-          {waitingForMergeApproval && currentMessage === 'overtaking' && (
-            <div className="mb-3 text-center text-[#F8A406] text-xs animate-pulse">
-              ⚠ AV is waiting for your approval
-            </div>
-          )}
-          {waitingForMergeApproval && currentMessage === 'goahead' && (
-            <div className="mb-3 text-center text-green-400 text-xs animate-pulse">
-              ✓ Safe to proceed - Click "Acknowledge" to complete lane change
-            </div>
-          )}
-          {currentMessage === 'seesyou' && !userLaneChangeRequested && (
-            <div className="mb-3 text-center text-blue-400 text-xs animate-pulse">
-              💡 AV sees you - Click "Initiate Lane Change" when ready
-            </div>
-          )}
           {waitingForCameraApproval && (
             <div className="mb-3 text-center text-blue-400 text-xs animate-pulse">
               📹 Would you like to view the live footage?
+            </div>
+          )}
+          {waitingForRightOfWay && (
+            <div className="mb-3 text-center text-purple-400 text-xs animate-pulse">
+              🚦 Traffic light malfunction - Who should go first?
             </div>
           )}
           <div className="text-[#F3F7FF]/70 text-xs font-medium mb-2">Report Hazard:</div>
